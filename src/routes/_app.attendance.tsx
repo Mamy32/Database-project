@@ -1,42 +1,171 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudPage } from "@/components/crud/CrudPage";
-import { loadDB } from "@/lib/mock-data";
+
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export const Route = createFileRoute("/_app/attendance")({
   component: AttendancePage,
 });
 
 function AttendancePage() {
-  const db = loadDB();
+
+  // =========================================
+  // STATES
+  // =========================================
+
+  const [members, setMembers] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+
+  // =========================================
+  // FETCH DATA
+  // =========================================
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+
+    try {
+
+      const [membersRes, classesRes] =
+        await Promise.all([
+          axios.get("http://localhost:5000/members"),
+          axios.get("http://localhost:5000/classes"),
+        ]);
+
+      setMembers(membersRes.data);
+      setClasses(classesRes.data);
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // =========================================
+  // UI
+  // =========================================
+
   return (
+
     <CrudPage
+
       title="Attendance"
+
       subtitle="Class check-ins by member"
+
+      // API route
       dbKey="attendance"
-      idPrefix="a"
+
+      // MySQL PK
+      idField="attendanceID"
+
       fields={[
+
+        // =========================================
+        // MEMBER
+        // =========================================
+
         {
-          key: "memberId", label: "Member", type: "select",
-          options: db.members.map((m) => ({ value: m.id, label: m.name })),
-          render: (r) => db.members.find((m) => m.id === r.memberId)?.name ?? "—",
+          key: "memberID",
+
+          label: "Member",
+
+          type: "select",
+
+          options: members.map((m) => ({
+            value: m.memberID,
+            label: `${m.firstName} ${m.lastName}`,
+          })),
+
+          render: (r) => {
+
+            const member = members.find(
+              (m) => m.memberID == r.memberID
+            );
+
+            return member
+              ? `${member.firstName} ${member.lastName}`
+              : "—";
+          },
         },
+
+        // =========================================
+        // CLASS
+        // =========================================
+
         {
-          key: "classId", label: "Class", type: "select",
-          options: db.classes.map((c) => ({ value: c.id, label: c.name })),
-          render: (r) => db.classes.find((c) => c.id === r.classId)?.name ?? "—",
+          key: "classID",
+
+          label: "Class",
+
+          type: "select",
+
+          options: classes.map((c) => ({
+            value: c.classID,
+            label: c.className,
+          })),
+
+          render: (r) => {
+
+            const cls = classes.find(
+              (c) => c.classID == r.classID
+            );
+
+            return cls
+              ? cls.className
+              : "—";
+          },
         },
-        { key: "date", label: "Date", type: "date" },
+
+        // =========================================
+        // DATE
+        // =========================================
+
         {
-          key: "checkedIn", label: "Checked In", type: "select",
-          options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }],
-          render: (r) => (
-            <span className={`text-xs font-medium px-2 py-1 rounded ${String(r.checkedIn) === "true" || r.checkedIn === true ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"}`}>
-              {String(r.checkedIn) === "true" || r.checkedIn === true ? "Yes" : "No"}
-            </span>
-          ),
+          key: "date",
+          label: "Date",
+          type: "date",
         },
+
+        // =========================================
+        // CHECK IN
+        // =========================================
+
+        {
+  key: "checkedIn",
+
+  label: "Checked In",
+
+  type: "select",
+
+  options: [
+    {
+      value: "Yes",
+      label: "Yes",
+    },
+
+    {
+      value: "No",
+      label: "No",
+    },
+  ],
+
+  render: (r) => (
+
+    <span
+      className={`text-xs font-medium px-2 py-1 rounded ${
+        r.checkedIn === "Yes"
+          ? "bg-accent text-accent-foreground"
+          : "bg-secondary text-muted-foreground"
+      }`}
+    >
+      {r.checkedIn}
+    </span>
+  ),
+},
       ]}
-      defaults={{ checkedIn: "true" }}
     />
   );
 }

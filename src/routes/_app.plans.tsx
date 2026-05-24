@@ -2,18 +2,72 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudPage } from "@/components/crud/CrudPage";
 
 export const Route = createFileRoute("/_app/plans")({
-  component: () => (
+  component: PlansPage,
+});
+
+function PlansPage() {
+
+  return (
+
     <CrudPage
+
       title="Membership Plans"
+
       subtitle="Subscription tiers offered to members"
+
+      // API route
       dbKey="plans"
-      idPrefix="p"
+
+      // MySQL primary key
+      idField="planID"
+
       fields={[
-        { key: "name", label: "Name" },
-        { key: "price", label: "Price ($)", type: "number", render: (r) => `$${r.price}` },
-        { key: "durationMonths", label: "Duration (mo)", type: "number" },
-        { key: "description", label: "Description" },
+
+        // =========================================
+        // PLAN NAME
+        // =========================================
+
+        {
+          key: "planName",
+          label: "Plan Name",
+        },
+
+        // =========================================
+        // PLAN PRICE
+        // =========================================
+
+        {
+          key: "planPrice",
+
+          label: "Price ($)",
+
+          type: "number",
+
+          render: (r) => `$${r.planPrice}`,
+        },
+
+        // =========================================
+        // DURATION
+        // =========================================
+
+        {
+          key: "duration",
+
+          label: "Duration (months)",
+
+          type: "number",
+        },
+
+        // =========================================
+        // DESCRIPTION
+        // =========================================
+
+        {
+          key: "description",
+
+          label: "Description",
+        },
       ]}
     />
-  ),
-});
+  );
+}

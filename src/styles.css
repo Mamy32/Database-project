@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
-
+@import "react-phone-input-2/lib/style.css";
 @custom-variant dark (&:is(.dark *));
 
 /*

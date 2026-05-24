@@ -47,7 +47,7 @@ export function AppShell() {
           })}
         </nav>
         <div className="p-4 border-t border-border text-xs text-muted-foreground">
-          Frontend demo · mock data
+          Gym management 2026
         </div>
       </aside>
       <main className="flex-1 overflow-auto">

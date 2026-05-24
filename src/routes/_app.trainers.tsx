@@ -2,17 +2,54 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudPage } from "@/components/crud/CrudPage";
 
 export const Route = createFileRoute("/_app/trainers")({
-  component: () => (
+  component: TrainersPage,
+});
+
+function TrainersPage() {
+
+  return (
+
     <CrudPage
+
       title="Trainers"
-      subtitle="Coaches running classes"
+
+      subtitle="Coaches running gym classes"
+
+      // API route
       dbKey="trainers"
-      idPrefix="t"
+
+      // MySQL PK
+      idField="trainerID"
+
       fields={[
-        { key: "name", label: "Name" },
-        { key: "specialty", label: "Specialty" },
-        { key: "email", label: "Email" },
+
+        // =========================================
+        // TRAINER NAME
+        // =========================================
+
+        {
+          key: "trainerName",
+          label: "Trainer Name",
+        },
+
+        // =========================================
+        // SPECIALIZATION
+        // =========================================
+
+        {
+          key: "specialization",
+          label: "Specialization",
+        },
+
+        // =========================================
+        // DAYS AVAILABLE
+        // =========================================
+
+        {
+          key: "daysAvailable",
+          label: "Days Available",
+        },
       ]}
     />
-  ),
-});
+  );
+}
