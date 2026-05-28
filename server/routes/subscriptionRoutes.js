@@ -50,7 +50,7 @@ router.post('/', (req, res) => {
             method,
             status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
@@ -120,7 +120,6 @@ router.put('/:id', (req, res) => {
             paymentDate,
             method,
             status,
-            id
         ],
         (err, result) => {
 

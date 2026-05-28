@@ -22,70 +22,90 @@ const DAYS = [
   "Sunday",
 ];
 
-
 function SchedulesPage() {
-  // =========================================
-  // DURATION CALCULATION
-  // =========================================
-  function calculateDuration(
-  start: string,
-  end: string,
-  form: any,
-  setForm: any
-) {
-
-  if (!start || !end) return;
-
-  const startDate =
-    new Date(`1970-01-01T${start}`);
-
-  const endDate =
-    new Date(`1970-01-01T${end}`);
-
-  const diffMs =
-    endDate.getTime() -
-    startDate.getTime();
-
-  const minutes =
-    diffMs / 1000 / 60;
-
-  if (minutes > 0) {
-
-    setForm((prev: any) => ({
-      ...prev,
-
-      duration: minutes,
-    }));
-  }
-}
 
   // =========================================
   // STATES
   // =========================================
 
-  const [trainers, setTrainers] = useState<any[]>([]);
+  const [trainers, setTrainers] =
+    useState<any[]>([]);
+
+  const [selectedDay, setSelectedDay] =
+    useState("");
 
   // =========================================
   // FETCH TRAINERS
   // =========================================
 
   useEffect(() => {
+
     fetchTrainers();
+
   }, []);
 
   async function fetchTrainers() {
 
     try {
 
-      const response = await axios.get(
-        "http://localhost:5000/trainers"
-      );
+      const response =
+        await axios.get(
+          "http://localhost:5000/trainers"
+        );
 
       setTrainers(response.data);
 
     } catch (error) {
+
       console.error(error);
     }
+  }
+
+  // =========================================
+  // DURATION CALCULATION
+  // =========================================
+
+  function calculateDuration(
+    start: string,
+    end: string,
+    setForm: any
+  ) {
+
+    if (!start || !end)
+      return;
+
+    const startDate =
+      new Date(
+        `1970-01-01T${start}`
+      );
+
+    let endDate =
+      new Date(
+        `1970-01-01T${end}`
+      );
+
+    // NEXT DAY FIX
+    if (endDate <= startDate) {
+
+      endDate.setDate(
+        endDate.getDate() + 1
+      );
+    }
+
+    const diffMs =
+      endDate.getTime() -
+      startDate.getTime();
+
+    const minutes =
+      Math.floor(
+        diffMs / 1000 / 60
+      );
+
+    setForm((prev: any) => ({
+      ...prev,
+
+      duration: minutes,
+    }));
   }
 
   // =========================================
@@ -100,10 +120,8 @@ function SchedulesPage() {
 
       subtitle="When classes are scheduled"
 
-      // API route
       dbKey="schedules"
 
-      // MySQL PK
       idField="scheduleID"
 
       fields={[
@@ -123,73 +141,88 @@ function SchedulesPage() {
             value: d,
             label: d,
           })),
+
+          onChange: (value) => {
+
+            setSelectedDay(value);
+          },
         },
 
         // =========================================
         // START TIME
         // =========================================
 
-{
-  key: "timeStart",
+        {
+          key: "timeStart",
 
-  label: "Start Time",
+          label: "Start Time",
 
-  type: "time",
+          type: "time",
 
-  onChange: (
-    value,
-    form,
-    setForm
-  ) => {
+          onChange: (
+            value,
+            form,
+            setForm
+          ) => {
 
-    calculateDuration(
-      value,
-      form.timeEnd,
-      form,
-      setForm
-    );
-  },
-},
+            setForm((prev: any) => ({
+              ...prev,
+
+              timeStart: value,
+            }));
+
+            calculateDuration(
+              value,
+              form.timeEnd,
+              setForm
+            );
+          },
+        },
 
         // =========================================
         // END TIME
         // =========================================
 
-{
-  key: "timeEnd",
+        {
+          key: "timeEnd",
 
-  label: "End Time",
+          label: "End Time",
 
-  type: "time",
+          type: "time",
 
-  onChange: (
-    value,
-    form,
-    setForm
-  ) => {
+          onChange: (
+            value,
+            form,
+            setForm
+          ) => {
 
-    calculateDuration(
-      form.timeStart,
-      value,
-      form,
-      setForm
-    );
-  },
-},
+            setForm((prev: any) => ({
+              ...prev,
+
+              timeEnd: value,
+            }));
+
+            calculateDuration(
+              form.timeStart,
+              value,
+              setForm
+            );
+          },
+        },
 
         // =========================================
         // DURATION
         // =========================================
 
-  {
-  key: "duration",
+        {
+          key: "duration",
 
-  label: "Duration (Minutes)",
+          label: "Duration (Minutes)",
 
-  type: "number",
+          type: "number",
 
-  readOnly: true,
-},
+          readOnly: true,
+        },
 
         // =========================================
         // TRAINER
@@ -202,19 +235,64 @@ function SchedulesPage() {
 
           type: "select",
 
-          options: trainers.map((t) => ({
-            value: t.trainerID,
-            label: t.trainerName,
-          })),
+          options: trainers
+
+            .filter((t) => {
+
+              if (
+                t.daysAvailable ===
+                "Everyday"
+              )
+                return true;
+
+              if (
+                t.daysAvailable ===
+                "Weekends"
+              ) {
+
+                return [
+                  "Saturday",
+                  "Sunday",
+                ].includes(selectedDay);
+              }
+
+              if (
+                t.daysAvailable ===
+                "Monday-Friday"
+              ) {
+
+                return [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                ].includes(selectedDay);
+              }
+
+              return t.daysAvailable
+                ?.includes(selectedDay);
+            })
+
+            .map((t) => ({
+
+              value: t.trainerID,
+
+              label:
+                `${t.trainerName} (${t.specialization})`,
+            })),
 
           render: (r) => {
 
-            const trainer = trainers.find(
-              (t) => t.trainerID == r.trainerID
-            );
+            const trainer =
+              trainers.find(
+                (t) =>
+                  t.trainerID ==
+                  r.trainerID
+              );
 
             return trainer
-              ? trainer.trainerName
+              ? `${trainer.trainerName} (${trainer.specialization})`
               : "—";
           },
         },

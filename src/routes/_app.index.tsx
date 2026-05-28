@@ -87,8 +87,10 @@ function Dashboard() {
     {
       label: "Active Subscriptions",
       value: subscriptions.filter(
-        (s) => s.status === "active"
-      ).length,
+  (s) =>
+    s.status?.toLowerCase() ===
+    "active"
+).length,
       icon: CreditCard,
     },
 

@@ -45,10 +45,28 @@ function TrainersPage() {
         // DAYS AVAILABLE
         // =========================================
 
-        {
-          key: "daysAvailable",
-          label: "Days Available",
-        },
+{
+  key: "daysAvailable",
+
+  label: "Days Available",
+
+  type: "select",
+
+  options: [
+    {
+      value: "Monday-Friday",
+      label: "Monday-Friday",
+    },
+    {
+      value: "Weekends",
+      label: "Weekends",
+    },
+    {
+      value: "Everyday",
+      label: "Everyday",
+    },
+  ],
+},
       ]}
     />
   );

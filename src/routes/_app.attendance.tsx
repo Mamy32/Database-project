@@ -14,8 +14,17 @@ function AttendancePage() {
   // STATES
   // =========================================
 
-  const [members, setMembers] = useState<any[]>([]);
-  const [classes, setClasses] = useState<any[]>([]);
+  const [members, setMembers] =
+    useState<any[]>([]);
+
+  const [classes, setClasses] =
+    useState<any[]>([]);
+
+  const [subscriptions, setSubscriptions] =
+    useState<any[]>([]);
+
+  const [plans, setPlans] =
+    useState<any[]>([]);
 
   // =========================================
   // FETCH DATA
@@ -29,19 +38,88 @@ function AttendancePage() {
 
     try {
 
-      const [membersRes, classesRes] =
-        await Promise.all([
-          axios.get("http://localhost:5000/members"),
-          axios.get("http://localhost:5000/classes"),
-        ]);
+      const [
+        membersRes,
+        classesRes,
+        subscriptionsRes,
+        plansRes,
+      ] = await Promise.all([
 
-      setMembers(membersRes.data);
-      setClasses(classesRes.data);
+        axios.get(
+          "http://localhost:5000/members"
+        ),
+
+        axios.get(
+          "http://localhost:5000/classes"
+        ),
+
+        axios.get(
+          "http://localhost:5000/subscriptions"
+        ),
+
+        axios.get(
+          "http://localhost:5000/plans"
+        ),
+      ]);
+
+      setMembers(
+        membersRes.data
+      );
+
+      setClasses(
+        classesRes.data
+      );
+
+      setSubscriptions(
+        subscriptionsRes.data
+      );
+
+      setPlans(
+        plansRes.data
+      );
 
     } catch (error) {
       console.error(error);
     }
   }
+
+  // =========================================
+  // ONLY STANDARD / PREMIUM MEMBERS
+  // =========================================
+
+  const eligibleMembers =
+    members.filter((member) => {
+
+      const activeSubscription =
+        subscriptions.find(
+          (s) =>
+            String(s.memberID) ===
+              String(member.memberID) &&
+            s.status
+              ?.toLowerCase() ===
+              "active"
+        );
+
+      if (!activeSubscription)
+        return false;
+
+      const plan =
+        plans.find(
+          (p) =>
+            String(p.planID) ===
+            String(
+              activeSubscription.planID
+            )
+        );
+
+      if (!plan) return false;
+
+      return (
+        !plan.planName
+          ?.toLowerCase()
+          .includes("basic")
+      );
+    });
 
   // =========================================
   // UI
@@ -74,19 +152,61 @@ function AttendancePage() {
 
           type: "select",
 
-          options: members.map((m) => ({
-            value: m.memberID,
-            label: `${m.firstName} ${m.lastName}`,
-          })),
+          options:
+            eligibleMembers.map((m) => {
+
+              const subscription =
+                subscriptions.find(
+                  (s) =>
+                    String(s.memberID) ===
+                    String(m.memberID)
+                );
+
+              const plan =
+                plans.find(
+                  (p) =>
+                    String(p.planID) ===
+                    String(
+                      subscription?.planID
+                    )
+                );
+
+              return {
+
+                value: m.memberID,
+
+                label:
+                  `${m.firstName} ${m.lastName} (${plan?.planName})`,
+              };
+            }),
 
           render: (r) => {
 
-            const member = members.find(
-              (m) => m.memberID == r.memberID
-            );
+            const member =
+              members.find(
+                (m) =>
+                  String(m.memberID) ===
+                  String(r.memberID)
+              );
+
+            const subscription =
+              subscriptions.find(
+                (s) =>
+                  String(s.memberID) ===
+                  String(r.memberID)
+              );
+
+            const plan =
+              plans.find(
+                (p) =>
+                  String(p.planID) ===
+                  String(
+                    subscription?.planID
+                  )
+              );
 
             return member
-              ? `${member.firstName} ${member.lastName}`
+              ? `${member.firstName} ${member.lastName} (${plan?.planName})`
               : "—";
           },
         },
@@ -109,9 +229,12 @@ function AttendancePage() {
 
           render: (r) => {
 
-            const cls = classes.find(
-              (c) => c.classID == r.classID
-            );
+            const cls =
+              classes.find(
+                (c) =>
+                  String(c.classID) ===
+                  String(r.classID)
+              );
 
             return cls
               ? cls.className
@@ -125,46 +248,70 @@ function AttendancePage() {
 
         {
           key: "date",
+
           label: "Date",
+
           type: "date",
+
+          readOnly: true,
+
+          defaultValue: () =>
+            new Date()
+              .toISOString()
+              .split("T")[0],
+
+          render: (r) =>
+
+            r.date
+              ? new Date(r.date)
+                  .toLocaleDateString(
+                    "en-GB",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )
+              : "—",
         },
 
         // =========================================
-        // CHECK IN
+        // CHECKED IN
         // =========================================
 
         {
-  key: "checkedIn",
+          key: "checkedIn",
 
-  label: "Checked In",
+          label: "Checked In",
 
-  type: "select",
+          type: "select",
 
-  options: [
-    {
-      value: "Yes",
-      label: "Yes",
-    },
+          options: [
 
-    {
-      value: "No",
-      label: "No",
-    },
-  ],
+            {
+              value: "Yes",
+              label: "Yes",
+            },
 
-  render: (r) => (
+            {
+              value: "No",
+              label: "No",
+            },
+          ],
 
-    <span
-      className={`text-xs font-medium px-2 py-1 rounded ${
-        r.checkedIn === "Yes"
-          ? "bg-accent text-accent-foreground"
-          : "bg-secondary text-muted-foreground"
-      }`}
-    >
-      {r.checkedIn}
-    </span>
-  ),
-},
+          render: (r) => (
+
+            <span
+              className={`text-xs font-medium px-2 py-1 rounded ${
+                r.checkedIn === "Yes"
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {r.checkedIn}
+            </span>
+          ),
+        },
       ]}
     />
   );

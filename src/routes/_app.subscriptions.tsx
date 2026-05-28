@@ -42,6 +42,25 @@ function SubscriptionsPage() {
       console.error(error);
     }
   }
+  function calculateEndDate(
+  startDate: string,
+  duration: number
+) {
+
+  if (!startDate || !duration)
+    return "";
+
+  const date =
+    new Date(startDate);
+
+  date.setMonth(
+    date.getMonth() + duration
+  );
+
+  return date
+    .toISOString()
+    .split("T")[0];
+}
 
   // =========================================
   // UI
@@ -95,7 +114,7 @@ function SubscriptionsPage() {
         // PLAN
         // =========================================
 
-        {
+{
   key: "planID",
 
   label: "Plan",
@@ -118,7 +137,7 @@ function SubscriptionsPage() {
       : "—";
   },
 
-  // AUTO UPDATE PAYMENT
+  // AUTO UPDATE PAYMENT + END DATE
   onChange: (
     value,
     form,
@@ -131,6 +150,24 @@ function SubscriptionsPage() {
 
     if (selectedPlan) {
 
+      let endDate = "";
+
+      if (form.startDate) {
+
+        const date =
+          new Date(form.startDate);
+
+        date.setMonth(
+          date.getMonth() +
+          selectedPlan.duration
+        );
+
+        endDate =
+          date
+            .toISOString()
+            .split("T")[0];
+      }
+
       setForm((prev: any) => ({
         ...prev,
 
@@ -138,6 +175,8 @@ function SubscriptionsPage() {
 
         paymentAmount:
           selectedPlan.planPrice,
+
+        endDate,
       }));
     }
   },
@@ -147,21 +186,78 @@ function SubscriptionsPage() {
         // START DATE
         // =========================================
 
+{
+  key: "startDate",
+
+  label: "Start Date",
+
+  type: "date",
+
+  onChange: (
+    value,
+    form,
+    setForm
+  ) => {
+
+    const selectedPlan =
+      plans.find(
+        (p) =>
+          p.planID == form.planID
+      );
+
+    if (selectedPlan) {
+
+      const endDate =
+        calculateEndDate(
+          value,
+          selectedPlan.duration
+        );
+
+      setForm((prev: any) => ({
+        ...prev,
+
+        startDate: value,
+
+        endDate,
+      }));
+    }
+  },
+
+  render: (r) =>
+    new Date(r.startDate)
+      .toLocaleDateString(
+        "en-GB",
         {
-          key: "startDate",
-          label: "Start Date",
-          type: "date",
-        },
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      ),
+},
 
         // =========================================
         // END DATE
         // =========================================
 
+{
+  key: "endDate",
+
+  label: "End Date",
+
+  type: "date",
+  readOnly: true,
+
+  render: (r) =>
+    new Date(r.endDate)
+      .toLocaleDateString(
+        "en-GB",
         {
-          key: "endDate",
-          label: "End Date",
-          type: "date",
-        },
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      ),
+},
 
         // =========================================
         // PAYMENT AMOUNT
@@ -184,11 +280,24 @@ function SubscriptionsPage() {
         // PAYMENT DATE
         // =========================================
 
+{
+  key: "paymentDate",
+
+  label: "Payment Date",
+
+  type: "date",
+
+  render: (r) =>
+    new Date(r.paymentDate)
+      .toLocaleDateString(
+        "en-GB",
         {
-          key: "paymentDate",
-          label: "Payment Date",
-          type: "date",
-        },
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      ),
+},
 
         // =========================================
         // PAYMENT METHOD

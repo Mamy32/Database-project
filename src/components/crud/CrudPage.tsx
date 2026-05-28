@@ -49,15 +49,16 @@ export type Field = {
     row: any
   ) => React.ReactNode;
 
-  // NEW
   onChange?: (
     value: any,
     form: any,
     setForm: any
   ) => void;
 
-  // NEW
   readOnly?: boolean;
+
+  // NEW
+  defaultValue?: any;
 };
 
 type Props = {
@@ -86,7 +87,40 @@ export function CrudPage({
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-  const [form, setForm] = useState<Record<string, any>>({});
+const buildInitialForm = () => {
+
+  const initial: Record<string, any> = {
+    ...defaults,
+
+    // AUTO TODAY DATE
+    date:
+      new Date()
+        .toISOString()
+        .split("T")[0],
+  };
+
+  fields.forEach((f) => {
+
+    if (
+      f.defaultValue !== undefined
+    ) {
+
+      initial[f.key] =
+        typeof f.defaultValue ===
+        "function"
+          ? f.defaultValue()
+          : f.defaultValue;
+    }
+  });
+
+  return initial;
+};
+
+const [form, setForm] =
+
+  useState<Record<string, any>>(
+    buildInitialForm()
+  );
 
   // =========================================
   // FETCH DATA
@@ -113,11 +147,16 @@ export function CrudPage({
   // OPEN CREATE
   // =========================================
 
-  function openCreate() {
-    setEditing(null);
-    setForm({ ...defaults });
-    setOpen(true);
-  }
+function openCreate() {
+
+  setEditing(null);
+
+  setForm(
+    buildInitialForm()
+  );
+
+  setOpen(true);
+}
 
   // =========================================
   // OPEN EDIT
@@ -136,6 +175,13 @@ export function CrudPage({
   async function submit() {
     try {
 
+      if (dbKey === "attendance") {
+
+  form.date =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+}
       if (editing) {
 
         // UPDATE
@@ -297,24 +343,26 @@ export function CrudPage({
 
   value={form[f.key] ?? ""}
 
-  onChange={(e) => {
+onChange={(e) => {
 
-    const value = e.target.value;
+  const value = e.target.value;
 
-    setForm({
-      ...form,
-      [f.key]: value,
-    });
+  const updatedForm = {
+    ...form,
+    [f.key]: value,
+  };
 
-    if (f.onChange) {
+  setForm(updatedForm);
 
-      f.onChange(
-        value,
-        form,
-        setForm
-      );
-    }
-  }}
+  if (f.onChange) {
+
+    f.onChange(
+      value,
+      updatedForm,
+      setForm
+    );
+  }
+}}
 />
 )}
                   </div>

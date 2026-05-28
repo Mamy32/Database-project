@@ -14,28 +14,54 @@ function ClassesPage() {
   // STATES
   // =========================================
 
-  const [trainers, setTrainers] = useState<any[]>([]);
+  const [trainers, setTrainers] =
+    useState<any[]>([]);
+
+  const [schedules, setSchedules] =
+    useState<any[]>([]);
+
+  const [selectedTrainer, setSelectedTrainer] =
+    useState("");
 
   // =========================================
-  // FETCH TRAINERS
+  // FETCH DATA
   // =========================================
 
   useEffect(() => {
-    fetchTrainers();
+
+    fetchData();
+
   }, []);
 
-  async function fetchTrainers() {
+  async function fetchData() {
 
     try {
 
-      const response = await axios.get(
-        "http://localhost:5000/trainers"
+      const [
+        trainersRes,
+        schedulesRes,
+      ] = await Promise.all([
+
+        axios.get(
+          "http://localhost:5000/trainers"
+        ),
+
+        axios.get(
+          "http://localhost:5000/schedules"
+        ),
+      ]);
+
+      setTrainers(
+        trainersRes.data
       );
 
-      setTrainers(response.data);
+      setSchedules(
+        schedulesRes.data
+      );
 
     } catch (error) {
-      console.error(error);
+
+      console.log(error);
     }
   }
 
@@ -54,7 +80,7 @@ function ClassesPage() {
       // API route
       dbKey="classes"
 
-      // MySQL primary key
+      // MySQL PK
       idField="classID"
 
       fields={[
@@ -65,6 +91,7 @@ function ClassesPage() {
 
         {
           key: "className",
+
           label: "Class Name",
         },
 
@@ -80,30 +107,79 @@ function ClassesPage() {
           type: "select",
 
           options: trainers.map((t) => ({
-            value: t.trainerID,
-            label: t.trainerName,
+
+            value: String(
+              t.trainerID
+            ),
+
+            label:
+              `${t.trainerName} (${t.specialization})`,
           })),
+
+          onChange: (value) => {
+
+            setSelectedTrainer(
+              String(value)
+            );
+          },
 
           render: (r) => {
 
-            const trainer = trainers.find(
-              (t) => t.trainerID == r.trainerID
-            );
+            const trainer =
+              trainers.find(
+                (t) =>
+                  String(t.trainerID) ===
+                  String(r.trainerID)
+              );
 
             return trainer
-              ? trainer.trainerName
+              ? `${trainer.trainerName} (${trainer.specialization})`
               : "—";
           },
         },
 
         // =========================================
-        // SCHEDULE ID
+        // SCHEDULE
         // =========================================
 
         {
           key: "scheduleID",
-          label: "Schedule ID",
-          type: "number",
+
+          label: "Schedule",
+
+          type: "select",
+
+          options: schedules
+
+            .filter(
+              (s) =>
+                String(s.trainerID) ===
+                String(selectedTrainer)
+            )
+
+            .map((s) => ({
+
+              value: String(
+                s.scheduleID
+              ),
+
+              label:
+                `${s.day} • ${s.timeStart} - ${s.timeEnd}`,
+            })),
+
+          render: (r) => {
+
+            const schedule =
+              schedules.find(
+                (s) =>
+                  String(s.scheduleID) ===
+                  String(r.scheduleID)
+              );
+
+            return schedule
+              ? `${schedule.day} • ${schedule.timeStart} - ${schedule.timeEnd}`
+              : "—";
+          },
         },
 
         // =========================================
@@ -112,7 +188,9 @@ function ClassesPage() {
 
         {
           key: "maxCapacity",
+
           label: "Max Capacity",
+
           type: "number",
         },
       ]}
