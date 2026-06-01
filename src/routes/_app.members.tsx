@@ -19,7 +19,7 @@ function MembersPage() {
         {
           key: "firstName",
           label: "First Name",
-         
+        
         },
         {
           key: "lastName",
