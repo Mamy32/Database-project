@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
 
 import {
@@ -54,11 +54,11 @@ function Dashboard() {
         attendanceRes,
         schedulesRes,
       ] = await Promise.all([
-        axios.get("http://localhost:5000/members"),
-        axios.get("http://localhost:5000/subscriptions"),
-        axios.get("http://localhost:5000/classes"),
-        axios.get("http://localhost:5000/attendance"),
-        axios.get("http://localhost:5000/schedules"),
+        axios.get(`${API_URL}/members`),
+        axios.get(`${API_URL}/subscriptions`),
+        axios.get(`${API_URL}/classes`),
+        axios.get(`${API_URL}/attendance`),
+        axios.get(`${API_URL}/schedules`),
       ]);
 
       setMembers(membersRes.data);

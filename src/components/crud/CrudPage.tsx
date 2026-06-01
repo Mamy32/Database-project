@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PhoneInput from "react-phone-input-2";
+import { API_URL } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -133,7 +134,7 @@ const [form, setForm] =
   async function fetchData() {
     try {
       const response = await axios.get(
-        `http://localhost:5000/${dbKey}`
+        `${API_URL}/${dbKey}`
       );
 
       setRows(response.data);
@@ -186,7 +187,7 @@ function openCreate() {
 
         // UPDATE
         await axios.put(
-          `http://localhost:5000/${dbKey}/${editing[idField]}`,
+          `${API_URL}/${dbKey}/${editing[idField]}`,
           form
         );
 
@@ -194,7 +195,7 @@ function openCreate() {
 
         // CREATE
         await axios.post(
-          `http://localhost:5000/${dbKey}`,
+          `${API_URL}/${dbKey}`,
           form
         );
       }
@@ -219,7 +220,7 @@ function openCreate() {
     try {
 
       await axios.delete(
-        `http://localhost:5000/${dbKey}/${id}`
+        `${API_URL}/${dbKey}/${id}`
       );
 
       fetchData();

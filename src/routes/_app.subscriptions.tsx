@@ -3,7 +3,7 @@ import { CrudPage } from "@/components/crud/CrudPage";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "@/lib/api";
 export const Route = createFileRoute("/_app/subscriptions")({
   component: SubscriptionsPage,
 });
@@ -31,8 +31,8 @@ function SubscriptionsPage() {
 
       const [membersRes, plansRes] =
         await Promise.all([
-          axios.get("http://localhost:5000/members"),
-          axios.get("http://localhost:5000/plans"),
+          axios.get(`${API_URL}/members`),
+          axios.get(`${API_URL}/plans`),
         ]);
 
       setMembers(membersRes.data);

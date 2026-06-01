@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudPage } from "@/components/crud/CrudPage";
-
+import { API_URL } from "@/lib/api";
 export const Route = createFileRoute("/_app/members")({
   component: MembersPage,
 });

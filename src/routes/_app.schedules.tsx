@@ -3,7 +3,7 @@ import { CrudPage } from "@/components/crud/CrudPage";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "@/lib/api";
 export const Route = createFileRoute("/_app/schedules")({
   component: SchedulesPage,
 });
@@ -50,7 +50,7 @@ function SchedulesPage() {
 
       const response =
         await axios.get(
-          "http://localhost:5000/trainers"
+          `${API_URL}/trainers`
         );
 
       setTrainers(response.data);

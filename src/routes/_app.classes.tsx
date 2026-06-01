@@ -3,7 +3,7 @@ import { CrudPage } from "@/components/crud/CrudPage";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "@/lib/api";
 export const Route = createFileRoute("/_app/classes")({
   component: ClassesPage,
 });
@@ -43,11 +43,11 @@ function ClassesPage() {
       ] = await Promise.all([
 
         axios.get(
-          "http://localhost:5000/trainers"
+          `${API_URL}/trainers`
         ),
 
         axios.get(
-          "http://localhost:5000/schedules"
+          `${API_URL}/schedules`
         ),
       ]);
 
